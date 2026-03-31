@@ -1,0 +1,43 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: smart-waste-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+    container_name: smart-waste-backend
+    restart: unless-stopped
+    environment:
+      APP_NAME: Smart Waste Management API
+      ENVIRONMENT: production
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB_NAME: smart_waste_db
+      UPLOAD_DIR: /app/uploads
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+    volumes:
+      - backend_uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: smart-waste-frontend
+    restart: unless-stopped
+    environment:
+      API_BASE: http://backend:8000/api
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
+  backend_uploads:
